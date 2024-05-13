@@ -12,6 +12,11 @@ const BundleSchema = new mongoose.Schema({
     description: {
         type: String
     },
+    visibility: {
+        type: String,
+        enum: ['mock_only', 'user_only'],
+        default: 'mock_only'
+    },
     section_start_time: {
         type: Date
     },

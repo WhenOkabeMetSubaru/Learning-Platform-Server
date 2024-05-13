@@ -255,22 +255,27 @@ export const getMockAccess = async (req: any, res: any) => {
 
         let bundleDetails = await Bundle.find({ mock: req.params.mockId }).sort({ 'created': -1 });
 
-        // let bundleTimer = bundleDetails?.map((item: any, i: number) => {
-        //     let time1 = new Date();
-        //     let time2 = new Date();
+        let bundleDictionary: any = {};
 
-        //     // return {
-        //     //     _id: item?._id,
-        //     //     section_start_time: time1.setSeconds(time1.getSeconds() + (i * 10)),
-        //     //     section_end_time: time2.setSeconds(time2.getSeconds() + (i + 1) * 10)
-        //     // }
+      
+        for (let i = 0;i< bundleDetails.length ; i++) {
 
-        //     return {
-        //         _id: item?._id,
-        //         section_start_time: time1.setMinutes(time1.getMinutes() + (i * 1)),
-        //         section_end_time: time2.setMinutes(time2.getMinutes() + (i + 1) * 1)
-        //     }
-        // })
+            let bundleObj = {
+                title: bundleDetails[i].title,
+                mock: finalResult._id,
+                description: bundleDetails[i]?.description,
+                section_timer: bundleDetails[i]?.section_timer,
+                total_questions: bundleDetails[i]?.total_questions,
+                created_by: req.user._id
+            }
+            console.log(bundleDetails[i], " version " + i + " ", bundleDetails[i]?.length - 1, bundleObj)
+
+            let newBundle = new Bundle(bundleObj);
+            let userBundle = await newBundle.save();
+
+            bundleDictionary[bundleDetails[i]._id] = userBundle?._id;
+        }
+
 
         let bundleIDArr = bundleDetails?.map((item: any) => {
             return new ObjectId(item?._id);
@@ -286,8 +291,9 @@ export const getMockAccess = async (req: any, res: any) => {
             }
         ])
 
-
+        
         let newQuestions = questionDetails?.map((item: any) => {
+            console.log(item.bundle,bundleDictionary[item.bundle])
             return {
                 options: item.options,
                 correct_answer: item.correct_answer,
@@ -302,10 +308,11 @@ export const getMockAccess = async (req: any, res: any) => {
                 question: item.question,
                 answer_explanation: item.answer_explanation,
                 primary_data: item.primary_data,
-                bundle: item.bundle,
+                bundle: bundleDictionary[item.bundle],
                 question_count: item?.question_count,
                 access_type: 'answers',
-                question_status: "not_visited"
+                question_status: "not_visited",
+                created_by:req.user._id
             }
         })
 
@@ -337,6 +344,7 @@ export const getMockAccess = async (req: any, res: any) => {
 export const getAllDetailsAboutMock = async (req: any, res: any) => {
     try {
 
+        
         let mockDetails = await Mock.findById({ _id: req.params.mockId });
 
         // let bundleUpdate = await Bundle.updateMany({ mock: mockDetails?.testId }, {
@@ -344,10 +352,10 @@ export const getAllDetailsAboutMock = async (req: any, res: any) => {
         //         is_submitted: false
         //     }
         // })
-        let questionUpdate = await Question.updateMany({ access_type: 'answers' }, { question_status: "not_visited" });
+        let questionUpdate = await Question.updateMany({ access_type: 'answers',created_by:req.user?._id }, { question_status: "not_visited" });
 
 
-        let bundleDetails = await Bundle.find({ mock: mockDetails?.testId }).sort({ 'created': -1 });
+        let bundleDetails = await Bundle.find({ mock: mockDetails?._id,created_by:req.user._id }).sort({ 'created': -1 });
 
         // let bundleTimer = bundleDetails?.map((item:any,i:number)=>{
         //     let time1  = new Date();
@@ -366,7 +374,7 @@ export const getAllDetailsAboutMock = async (req: any, res: any) => {
         // }
 
         let getSubmittedSection = bundleDetails?.filter((item: any) => item?.is_submitted == true);
-
+      
         if (getSubmittedSection?.length > 0) {
             for (let i = 0; i < getSubmittedSection?.length; i++) {
                 let bundleUpdate = await Bundle.findByIdAndUpdate({ _id: getSubmittedSection[i]?._id }, { section_start_time: "", section_end_time: "" })
@@ -384,6 +392,7 @@ export const getAllDetailsAboutMock = async (req: any, res: any) => {
         }
 
 
+        
 
 
         let bundleUpdateNew = await Bundle.findByIdAndUpdate({ _id: bundleTimer._id }, { section_start_time: bundleTimer?.section_start_time, section_end_time: bundleTimer?.section_end_time })
@@ -398,7 +407,8 @@ export const getAllDetailsAboutMock = async (req: any, res: any) => {
                     bundle: {
                         $in: bundleIDArr
                     },
-                    access_type: "answers"
+                    access_type: "answers",
+                    created_by:new ObjectId(req.user._id)
                 }
             },
             {
@@ -408,6 +418,8 @@ export const getAllDetailsAboutMock = async (req: any, res: any) => {
                 }
             }
         ])
+
+        console.log(bundleIDArr,questionDetails,req.user)
 
         let questionArrayFinal: any = {};
 
@@ -542,7 +554,7 @@ export const getAllMocksByPageAndFilter = async (req: any, res: any) => {
             page: params?.pageNumber || 1,
             limit: params?.pageSize || 10,
             sort: {
-                'created': params?.sort || -1
+                createdAt: params?.sort || -1
             }
         }
 

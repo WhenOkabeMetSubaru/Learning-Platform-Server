@@ -32,6 +32,13 @@ const addNewBundleByUser = (req, res) => __awaiter(void 0, void 0, void 0, funct
         bundleDetails.created_by = req.user._id;
         let bundleCreate = new bundle_model_1.default(bundleDetails);
         let finalBundle = yield bundleCreate.save();
+        // let mockUpdate = await Mock.findByIdAndUpdate({_id:finalBundle?.mock},{
+        //     $push:{
+        //         bundles:{
+        //             bundleDetails:finalBundle?.mock
+        //         }
+        //     }
+        // })
         let finalOutput = {
             status: false,
             info: "bundle Created Successfully",

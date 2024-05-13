@@ -4,6 +4,7 @@ import { UserSchemaInput, UserSchemaOutput, UserOutputSucess } from "../types/us
 import User from "../models/user/user.model";
 import Question from '../models/question/question.model'
 import Bundle from "../models/question/bundle.model";
+import Mock from "../models/mock/mock.model";
 
 export const addNewBundleByUser = async (req: any, res: Response) => {
 
@@ -28,6 +29,14 @@ export const addNewBundleByUser = async (req: any, res: Response) => {
         let bundleCreate = new Bundle(bundleDetails);
 
         let finalBundle = await bundleCreate.save();
+
+        // let mockUpdate = await Mock.findByIdAndUpdate({_id:finalBundle?.mock},{
+        //     $push:{
+        //         bundles:{
+        //             bundleDetails:finalBundle?.mock
+        //         }
+        //     }
+        // })
 
         let finalOutput = {
             status: false,
@@ -176,6 +185,7 @@ export const getAllBundlesByMock = async (req: any, res: Response) => {
     try {
 
         let bundleDetails = await Bundle.find({ mock: req.params.mockId });
+       
 
         if (!bundleDetails) {
             return res.status(404).json({

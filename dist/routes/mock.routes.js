@@ -22,6 +22,8 @@ router.route('/v1/mock/access/new/:mockId')
     .get(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, mock_controller_1.getMockAccess);
 router.route('/v1/mock/details/all/:mockId')
     .get(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, mock_controller_1.getAllDetailsAboutMock);
+router.route('/v1/mock/details/result/:mockId')
+    .get(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, mock_controller_1.getAllDetailsAboutMockResultPage);
 router.route('/v1/mock/bundle/:bundleId/submit')
     .patch(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, mock_controller_1.updateMockBundleSubmit);
 router.route('/v1/mock/bundle/:bundleId/next')

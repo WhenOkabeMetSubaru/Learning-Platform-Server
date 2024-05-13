@@ -1,6 +1,6 @@
 
 import { Router } from "express";
-import {addNewMockByUser,getAllMocks,getAllMocksByPageAndFilter,getAllMocksByUser,getMockByID,updateMockBundleSubmit,updateMockBundleNextStatus, getPendingMockByUser,updateMockByID,getMockAccess,getAllDetailsAboutMock  } from '../controllers/mock.controller';
+import {addNewMockByUser,getAllMocks,getAllMocksByPageAndFilter,getAllDetailsAboutMockResultPage, getAllMocksByUser,getMockByID,updateMockBundleSubmit,updateMockBundleNextStatus, getPendingMockByUser,updateMockByID,getMockAccess,getAllDetailsAboutMock  } from '../controllers/mock.controller';
 import { signUp, signin, hasAuthorization, requireSignin, isUser, isAdmin, isPaidUser, isValidUserAny, attachUser } from '../auth/auth'
 
 const router = Router();
@@ -33,6 +33,9 @@ router.route('/v1/mock/access/new/:mockId')
 
 router.route('/v1/mock/details/all/:mockId')
     .get(requireSignin,attachUser,isValidUserAny,getAllDetailsAboutMock)
+
+router.route('/v1/mock/details/result/:mockId')
+    .get(requireSignin, attachUser, isValidUserAny, getAllDetailsAboutMockResultPage)
 
 router.route('/v1/mock/bundle/:bundleId/submit')
     .patch(requireSignin,attachUser,isValidUserAny,updateMockBundleSubmit)

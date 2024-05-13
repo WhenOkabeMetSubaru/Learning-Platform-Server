@@ -347,33 +347,17 @@ export const getAllDetailsAboutMock = async (req: any, res: any) => {
         
         let mockDetails = await Mock.findById({ _id: req.params.mockId });
 
-        // let bundleUpdate = await Bundle.updateMany({ mock: mockDetails?.testId }, {
-        //     $set: {
-        //         is_submitted: false
-        //     }
-        // })
+       
         let questionUpdate = await Question.updateMany({ access_type: 'answers',created_by:req.user?._id }, { question_status: "not_visited" });
 
 
         let bundleDetails = await Bundle.find({ mock: mockDetails?._id,created_by:req.user._id }).sort({ 'created': -1 });
 
-        // let bundleTimer = bundleDetails?.map((item:any,i:number)=>{
-        //     let time1  = new Date();
-        //     let time2 = new Date();
-
-
-        // return {
-        //     _id:item?._id,
-        //     section_start_time:"",
-        //     section_end_time:""
-        // }
-        // })
-
-        // for(let i = 0;i<bundleTimer?.length;i++){
-        //     let bundleUpdate = await Bundle.findByIdAndUpdate({_id:bundleTimer[i]._id},{section_start_time:bundleTimer[i]?.section_start_time,section_end_time:bundleTimer[i]?.section_end_time})
-        // }
+       
 
         let getSubmittedSection = bundleDetails?.filter((item: any) => item?.is_submitted == true);
+
+        
       
         if (getSubmittedSection?.length > 0) {
             for (let i = 0; i < getSubmittedSection?.length; i++) {
@@ -382,6 +366,21 @@ export const getAllDetailsAboutMock = async (req: any, res: any) => {
         }
 
         let firstPendingSection = bundleDetails?.find((item: any) => item?.is_submitted == false);
+
+        if(!firstPendingSection){
+
+            let finalDataObj = {
+                status: false,
+                info: "All Sections Submitted",
+                data: {
+                    mockDetails: mockDetails._doc,
+                    bundleDetails: [...bundleDetails],
+                    questionDetails: []
+                }
+            }
+
+            return res.status(200).json(finalDataObj)
+        }
 
         let time1 = new Date();
         let time2 = new Date();
@@ -419,7 +418,73 @@ export const getAllDetailsAboutMock = async (req: any, res: any) => {
             }
         ])
 
-        console.log(bundleIDArr,questionDetails,req.user)
+      
+
+        let questionArrayFinal: any = {};
+
+        for (let i = 0; i < questionDetails?.length; i++) {
+            questionArrayFinal[questionDetails[i]?._id] = questionDetails[i]?.questions
+        }
+
+
+
+
+        let finalDataObj = {
+            status: false,
+            info: "Data Fetched Successfully",
+            data: {
+                mockDetails: mockDetails._doc,
+                bundleDetails: [...bundleDetails],
+                questionDetails: questionArrayFinal
+            }
+        }
+
+        return res.status(200).json(finalDataObj)
+
+    } catch (error) {
+        console.log(error)
+        return res.status(400).json({
+            status: true,
+            info: 'Could not fetch mock details for  unknown reason'
+        })
+    }
+}
+
+export const getAllDetailsAboutMockResultPage = async (req: any, res: any) => {
+    try {
+
+
+        let mockDetails = await Mock.findById({ _id: req.params.mockId });
+
+
+        let questionUpdate = await Question.updateMany({ access_type: 'answers', created_by: req.user?._id }, { question_status: "not_visited" });
+
+
+        let bundleDetails = await Bundle.find({ mock: mockDetails?._id, created_by: req.user._id }).sort({ 'created': -1 });
+        
+        let bundleIDArr = bundleDetails?.map((item: any) => {
+            return new ObjectId(item?._id);
+        })
+
+        let questionDetails = await Question.aggregate([
+            {
+                $match: {
+                    bundle: {
+                        $in: bundleIDArr
+                    },
+                    access_type: "answers",
+                    created_by: new ObjectId(req.user._id)
+                }
+            },
+            {
+                $group: {
+                    "_id": "$bundle",
+                    "questions": { $push: "$$ROOT" }
+                }
+            }
+        ])
+
+
 
         let questionArrayFinal: any = {};
 

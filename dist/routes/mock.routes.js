@@ -4,14 +4,14 @@ const express_1 = require("express");
 const mock_controller_1 = require("../controllers/mock.controller");
 const auth_1 = require("../auth/auth");
 const router = (0, express_1.Router)();
+router.route('/v1/mock/add')
+    .post(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, mock_controller_1.addNewMockByUser);
 router.route('/v1/mock/all')
     .get(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, mock_controller_1.getAllMocks);
 router.route('/v1/mock/pagination/all')
     .get(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, mock_controller_1.getAllMocksByPageAndFilter);
 router.route('/v1/mock/user')
     .get(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, mock_controller_1.getAllMocksByUser);
-router.route('/v1/mock/add')
-    .post(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, mock_controller_1.addNewMockByUser);
 router.route('/v1/mock/update/:mockId')
     .patch(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, mock_controller_1.updateMockByID);
 router.route('/v1/mock/pending')

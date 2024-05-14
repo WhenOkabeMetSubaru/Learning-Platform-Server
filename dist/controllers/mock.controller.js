@@ -20,24 +20,33 @@ const question_model_1 = __importDefault(require("../models/question/question.mo
 const mongoose_1 = __importDefault(require("mongoose"));
 const ObjectId = mongoose_1.default.Types.ObjectId;
 const addNewMockByUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    let mockDetails = req.body;
-    mockDetails.created_by = req.user._id;
-    let checkExists = yield mock_model_1.default.findOne({ completion_status: "pending" });
-    if (checkExists) {
-        return {
-            status: true,
-            info: "Already Exists",
-            data: checkExists
+    try {
+        let mockDetails = req.body;
+        mockDetails.created_by = req.user._id;
+        let checkExists = yield mock_model_1.default.findOne({ completion_status: "pending", created_by: req.user._id });
+        if (checkExists) {
+            return {
+                status: true,
+                info: "Already Exists",
+                data: checkExists
+            };
+        }
+        let mockCreate = new mock_model_1.default(mockDetails);
+        let finalMock = yield mockCreate.save();
+        let finalOutput = {
+            status: false,
+            info: "Mock Created Successfully",
+            data: finalMock
         };
+        return res.status(200).json(finalOutput);
     }
-    let mockCreate = new mock_model_1.default(mockDetails);
-    let finalMock = yield mockCreate.save();
-    let finalOutput = {
-        status: false,
-        info: "Mock Created Successfully",
-        data: finalMock
-    };
-    return res.status(200).json(finalOutput);
+    catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            status: true,
+            info: error.message
+        });
+    }
 });
 exports.addNewMockByUser = addNewMockByUser;
 const getMockByID = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -466,7 +475,8 @@ const getAllMocksByPageAndFilter = (req, res) => __awaiter(void 0, void 0, void 
         let query = {
             mock_type: {
                 $eq: "paper"
-            }
+            },
+            completion_status: "completed"
         };
         let options = {
             page: (params === null || params === void 0 ? void 0 : params.pageNumber) || 1,

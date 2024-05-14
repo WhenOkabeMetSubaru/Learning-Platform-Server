@@ -14,30 +14,43 @@ const ObjectId = mongoose.Types.ObjectId;
 
 export const addNewMockByUser = async (req: any, res: Response) => {
 
-    let mockDetails = req.body;
-    mockDetails.created_by = req.user._id;
+   try {
+   
+       let mockDetails = req.body;
+       mockDetails.created_by = req.user._id;
+      
+       let checkExists = await Mock.findOne({ completion_status: "pending",created_by:req.user._id });
+       
 
-    let checkExists = await Mock.findOne({ completion_status: "pending" });
+       if (checkExists) {
+           return {
+               status: true,
+               info: "Already Exists",
+               data: checkExists
+           }
+       }
 
-    if (checkExists) {
-        return {
-            status: true,
-            info: "Already Exists",
-            data: checkExists
-        }
-    }
 
-    let mockCreate = new Mock(mockDetails);
+       let mockCreate = new Mock(mockDetails);
+     
+       let finalMock = await mockCreate.save();
 
-    let finalMock = await mockCreate.save();
+ 
 
-    let finalOutput = {
-        status: false,
-        info: "Mock Created Successfully",
-        data: finalMock
-    };
+       let finalOutput = {
+           status: false,
+           info: "Mock Created Successfully",
+           data: finalMock
+       };
 
-    return res.status(200).json(finalOutput);
+       return res.status(200).json(finalOutput);
+   } catch (error:any) {
+    console.log(error)
+        return res.status(500).json({
+            status:true,
+            info:error.message
+        })
+   }
 
 }
 
@@ -610,7 +623,8 @@ export const getAllMocksByPageAndFilter = async (req: any, res: any) => {
         let query: any = {
             mock_type: {
                 $eq: "paper"
-            }
+            },
+            completion_status:"completed"
         };
 
 

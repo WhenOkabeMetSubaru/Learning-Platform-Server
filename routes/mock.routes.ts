@@ -7,6 +7,10 @@ const router = Router();
 
 
 
+
+router.route('/v1/mock/add')
+    .post(requireSignin, attachUser, isValidUserAny, addNewMockByUser)
+
 router.route('/v1/mock/all')
     .get(requireSignin, attachUser, isValidUserAny, getAllMocks)
 
@@ -16,8 +20,6 @@ router.route('/v1/mock/pagination/all')
 router.route('/v1/mock/user')
     .get(requireSignin, attachUser, isValidUserAny,getAllMocksByUser)
 
-router.route('/v1/mock/add')
-    .post(requireSignin, attachUser, isValidUserAny,addNewMockByUser)
 
 router.route('/v1/mock/update/:mockId')
     .patch(requireSignin, attachUser, isValidUserAny,updateMockByID)

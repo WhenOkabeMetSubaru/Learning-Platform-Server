@@ -496,7 +496,7 @@ export const getAllQuestionsByPageAndFilter = async (req: any, res: any) => {
 
       
         let query: any = {
-            access_type:["single","read_only"]
+            access_type:["single","read_only","multiple"]
         };
 
 

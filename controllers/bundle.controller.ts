@@ -30,13 +30,11 @@ export const addNewBundleByUser = async (req: any, res: Response) => {
 
         let finalBundle = await bundleCreate.save();
 
-        // let mockUpdate = await Mock.findByIdAndUpdate({_id:finalBundle?.mock},{
-        //     $push:{
-        //         bundles:{
-        //             bundleDetails:finalBundle?.mock
-        //         }
-        //     }
-        // })
+        let mockUpdate = await Mock.findByIdAndUpdate({_id:finalBundle?.mock},{
+            $push:{
+                sections:finalBundle._id
+            }
+        })
 
         let finalOutput = {
             status: false,

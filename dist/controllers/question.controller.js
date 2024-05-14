@@ -363,7 +363,7 @@ const getAllQuestionsByPageAndFilter = (req, res) => __awaiter(void 0, void 0, v
     try {
         let params = req.query;
         let query = {
-            access_type: ["single", "read_only"]
+            access_type: ["single", "read_only", "multiple"]
         };
         let options = {
             page: (params === null || params === void 0 ? void 0 : params.pageNumber) || 1,

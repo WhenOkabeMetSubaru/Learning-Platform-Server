@@ -120,6 +120,39 @@ export const getAllMocksByUser = async (req: any, res: Response) => {
     }
 }
 
+export const getAllAttemptedMocksByUser = async (req: any, res: Response) => {
+
+    try {
+
+        let mockDetails = await Mock.find({ created_by: req.user._id, is_mock_completed_by_user:true, mock_type: "test" }).sort({ 'createdAt': -1 });
+
+        if (!mockDetails) {
+            return res.status(404).json({
+                status: true,
+                info: 'Mock not found'
+            })
+        }
+
+
+        let finalOutput = {
+            status: false,
+            info: "Mock Found",
+            data: mockDetails
+        }
+
+        return res.status(200).json(finalOutput);
+
+
+
+    } catch (error) {
+
+        return res.status(400).json({
+            status: true,
+            info: 'Could not fetch user  unknown reason'
+        })
+    }
+}
+
 export const getPendingMockByUser = async (req: any, res: Response, next: NextFunction) => {
     try {
 
@@ -256,7 +289,9 @@ export const getMockAccess = async (req: any, res: any) => {
             testId: req.params.mockId,
             mock_type: 'test',
             mock_start_time: start_time,
-            mock_end_time: end_time
+            mock_end_time: end_time,
+            title:mockDetails?.title,
+            description:mockDetails?.description
 
         }
 
@@ -281,7 +316,7 @@ export const getMockAccess = async (req: any, res: any) => {
                 total_questions: bundleDetails[i]?.total_questions,
                 created_by: req.user._id
             }
-            console.log(bundleDetails[i], " version " + i + " ", bundleDetails[i]?.length - 1, bundleObj)
+            // console.log(bundleDetails[i], " version " + i + " ", bundleDetails[i]?.length - 1, bundleObj)
 
             let newBundle = new Bundle(bundleObj);
             let userBundle = await newBundle.save();
@@ -306,7 +341,7 @@ export const getMockAccess = async (req: any, res: any) => {
 
         
         let newQuestions = questionDetails?.map((item: any) => {
-            console.log(item.bundle,bundleDictionary[item.bundle])
+           
             return {
                 options: item.options,
                 correct_answer: item.correct_answer,
@@ -577,12 +612,7 @@ export const updateMockBundleNextStatus = async (req: any, res: any) => {
                 let bundleUpdate = await Bundle.findByIdAndUpdate({ _id: getSubmittedSection[i]?._id }, { section_start_time: "", section_end_time: "" })
             }
         }
-        // return {
-        //     _id: item?._id,
-        //     section_start_time: time1.setSeconds(time1.getSeconds() + (i * 10)),
-        //     section_end_time: time2.setSeconds(time2.getSeconds() + (i + 1) * 10)
-        // }
-
+      
         let timerObj = {
 
             section_start_time: time1.setMinutes(time1.getMinutes()),
@@ -618,7 +648,9 @@ export const getAllMocksByPageAndFilter = async (req: any, res: any) => {
 
     try {
 
-        let params = req.body;
+        
+
+        let params = req.query;
 
         let query: any = {
             mock_type: {
@@ -647,6 +679,8 @@ export const getAllMocksByPageAndFilter = async (req: any, res: any) => {
             })
         }
 
+      
+
         return res.status(200).json({
             status: false,
             info: "Found the Data",
@@ -665,10 +699,62 @@ export const getAllMocksByPageAndFilter = async (req: any, res: any) => {
 
 
     } catch (error: any) {
+        console.log(error)
         return res.status(500).json({
             status: true,
             info: error.message
         })
     }
 
+}
+
+export const deleteAttemptedMockByUser = async (req:any,res:any) => {
+
+    try {
+
+        let bundleDetails = await Bundle.find({mock:req.params.mockId}).select('_id');
+        
+        let bundleIDArr = bundleDetails?.map((item: any) => {
+            return new ObjectId(item?._id);
+        })
+
+        let questionDetails = await Question.aggregate([
+            {
+                $match: {
+                    bundle: {
+                        $in: bundleIDArr
+                    },
+                    access_type: "answers",
+                    created_by: new ObjectId(req.user._id)
+                }
+            },
+            {
+                $project:{
+                    _id:1
+                }
+            }
+        ])
+
+        let filteredQuestions = questionDetails?.map((item:any)=>item._id);
+        
+        let deletedQuestions = await Question.deleteMany({_id:{$in:filteredQuestions}});
+       
+
+        let deletedBundle = await Bundle.deleteMany({_id:{$in:bundleIDArr}})
+
+        let deletedMock = await Mock.deleteOne({_id:req.params.mockId});
+
+
+        return res.json({
+            status:false,
+            info:"Success"
+        })
+    
+        
+    } catch (error:any) {
+        return res.status(500).json({
+            status:true,
+            info:error.message
+        })
+    }
 }

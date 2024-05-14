@@ -12,6 +12,8 @@ router.route('/v1/mock/pagination/all')
     .get(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, mock_controller_1.getAllMocksByPageAndFilter);
 router.route('/v1/mock/user')
     .get(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, mock_controller_1.getAllMocksByUser);
+router.route('/v1/mock/attempted/user')
+    .get(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, mock_controller_1.getAllAttemptedMocksByUser);
 router.route('/v1/mock/update/:mockId')
     .patch(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, mock_controller_1.updateMockByID);
 router.route('/v1/mock/pending')
@@ -22,6 +24,8 @@ router.route('/v1/mock/access/new/:mockId')
     .get(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, mock_controller_1.getMockAccess);
 router.route('/v1/mock/details/all/:mockId')
     .get(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, mock_controller_1.getAllDetailsAboutMock);
+router.route('/v1/mock/details/delete/:mockId')
+    .delete(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, mock_controller_1.deleteAttemptedMockByUser);
 router.route('/v1/mock/details/result/:mockId')
     .get(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, mock_controller_1.getAllDetailsAboutMockResultPage);
 router.route('/v1/mock/bundle/:bundleId/submit')

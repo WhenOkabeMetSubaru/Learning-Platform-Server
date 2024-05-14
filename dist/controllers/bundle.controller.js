@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateBundleByID = exports.getAllBundles = exports.getAllBundlesByMock = exports.getAllBundlesByUser = exports.getBundleByID = exports.getPendingBundleByUser = exports.addNewBundleToMock = exports.addNewBundleByUser = void 0;
 const user_model_1 = __importDefault(require("../models/user/user.model"));
 const bundle_model_1 = __importDefault(require("../models/question/bundle.model"));
+const mock_model_1 = __importDefault(require("../models/mock/mock.model"));
 const addNewBundleByUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let bundleDetails = req.body;
@@ -32,13 +33,11 @@ const addNewBundleByUser = (req, res) => __awaiter(void 0, void 0, void 0, funct
         bundleDetails.created_by = req.user._id;
         let bundleCreate = new bundle_model_1.default(bundleDetails);
         let finalBundle = yield bundleCreate.save();
-        // let mockUpdate = await Mock.findByIdAndUpdate({_id:finalBundle?.mock},{
-        //     $push:{
-        //         bundles:{
-        //             bundleDetails:finalBundle?.mock
-        //         }
-        //     }
-        // })
+        let mockUpdate = yield mock_model_1.default.findByIdAndUpdate({ _id: finalBundle === null || finalBundle === void 0 ? void 0 : finalBundle.mock }, {
+            $push: {
+                sections: finalBundle._id
+            }
+        });
         let finalOutput = {
             status: false,
             info: "bundle Created Successfully",

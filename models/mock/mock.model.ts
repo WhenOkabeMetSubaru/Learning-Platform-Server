@@ -12,6 +12,12 @@ const MockSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
+    sections:[
+        {
+            type:mongoose.Schema.ObjectId,
+            ref:"Bundle"
+        }
+    ],
     mock_type:{
         type:String,
         enum:['test','paper'],
@@ -68,7 +74,7 @@ const MockSchema = new mongoose.Schema({
     mock_pause_timing: {
         type: Date
     },
-    is_mock_completed: {
+    is_mock_completed_by_user: {
         type: Boolean,
         default: false
     },

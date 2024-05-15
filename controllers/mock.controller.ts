@@ -399,7 +399,7 @@ export const getAllDetailsAboutMock = async (req: any, res: any) => {
         let questionUpdate = await Question.updateMany({ access_type: 'answers',created_by:req.user?._id }, { question_status: "not_visited" });
 
 
-        let bundleDetails = await Bundle.find({ mock: mockDetails?._id,created_by:req.user._id }).sort({ 'created': -1 });
+        let bundleDetails = await Bundle.find({ mock: mockDetails?._id,created_by:req.user._id });
 
        
 
@@ -441,8 +441,11 @@ export const getAllDetailsAboutMock = async (req: any, res: any) => {
 
         
 
-
+        
         let bundleUpdateNew = await Bundle.findByIdAndUpdate({ _id: bundleTimer._id }, { section_start_time: bundleTimer?.section_start_time, section_end_time: bundleTimer?.section_end_time })
+
+
+        bundleDetails = await Bundle.find({ mock: mockDetails?._id, created_by: req.user._id });
 
         let bundleIDArr = bundleDetails?.map((item: any) => {
             return new ObjectId(item?._id);

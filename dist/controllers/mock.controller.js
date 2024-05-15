@@ -301,7 +301,7 @@ const getAllDetailsAboutMock = (req, res) => __awaiter(void 0, void 0, void 0, f
     try {
         let mockDetails = yield mock_model_1.default.findById({ _id: req.params.mockId });
         let questionUpdate = yield question_model_1.default.updateMany({ access_type: 'answers', created_by: (_j = req.user) === null || _j === void 0 ? void 0 : _j._id }, { question_status: "not_visited" });
-        let bundleDetails = yield bundle_model_1.default.find({ mock: mockDetails === null || mockDetails === void 0 ? void 0 : mockDetails._id, created_by: req.user._id }).sort({ 'created': -1 });
+        let bundleDetails = yield bundle_model_1.default.find({ mock: mockDetails === null || mockDetails === void 0 ? void 0 : mockDetails._id, created_by: req.user._id });
         let getSubmittedSection = bundleDetails === null || bundleDetails === void 0 ? void 0 : bundleDetails.filter((item) => (item === null || item === void 0 ? void 0 : item.is_submitted) == true);
         if ((getSubmittedSection === null || getSubmittedSection === void 0 ? void 0 : getSubmittedSection.length) > 0) {
             for (let i = 0; i < (getSubmittedSection === null || getSubmittedSection === void 0 ? void 0 : getSubmittedSection.length); i++) {
@@ -329,6 +329,7 @@ const getAllDetailsAboutMock = (req, res) => __awaiter(void 0, void 0, void 0, f
             section_end_time: time2.setMinutes(time2.getMinutes() + (firstPendingSection === null || firstPendingSection === void 0 ? void 0 : firstPendingSection.section_timer) || 10)
         };
         let bundleUpdateNew = yield bundle_model_1.default.findByIdAndUpdate({ _id: bundleTimer._id }, { section_start_time: bundleTimer === null || bundleTimer === void 0 ? void 0 : bundleTimer.section_start_time, section_end_time: bundleTimer === null || bundleTimer === void 0 ? void 0 : bundleTimer.section_end_time });
+        bundleDetails = yield bundle_model_1.default.find({ mock: mockDetails === null || mockDetails === void 0 ? void 0 : mockDetails._id, created_by: req.user._id });
         let bundleIDArr = bundleDetails === null || bundleDetails === void 0 ? void 0 : bundleDetails.map((item) => {
             return new ObjectId(item === null || item === void 0 ? void 0 : item._id);
         });

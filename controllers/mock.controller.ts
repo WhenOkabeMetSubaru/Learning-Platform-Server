@@ -568,7 +568,9 @@ export const updateMockBundleSubmit = async (req: any, res: any) => {
     try {
 
         let updateBundle = await Bundle.findByIdAndUpdate({ _id: req.params.bundleId }, {
-            is_submitted: true
+            is_submitted: true,
+            section_start_time:"",
+            section_end_time:""
         }, { new: true });
 
         if (!updateBundle) {
@@ -576,6 +578,17 @@ export const updateMockBundleSubmit = async (req: any, res: any) => {
                 status: true,
                 info: "Failed to update"
             })
+        }
+
+        let bundleDetails = await Bundle.find({mock:updateBundle.mock});
+
+        let isPendingBundle = bundleDetails?.find((item: any) => item?.is_submitted == false);
+
+        if(!isPendingBundle){
+            let updateMock = await Mock.findByIdAndUpdate({_id:updateBundle?.mock},{
+                is_mock_completed_by_user:true
+            });
+            
         }
 
         return res.json({
@@ -755,6 +768,32 @@ export const deleteAttemptedMockByUser = async (req:any,res:any) => {
         return res.status(500).json({
             status:true,
             info:error.message
+        })
+    }
+}
+
+export const getLatestBundlesDataByMockUser = async(req:any,res:any)=>{
+    try {
+        
+        let bundleDetails = await Bundle.find({mock:req.params.mockId}) ;
+
+        if(bundleDetails?.length<1){
+            return res.status(404).json({
+                status:true,
+                info:"Not Found"
+            })
+        }
+
+        return res.json({
+            status:false,
+            info:"Data Found",
+            data:bundleDetails
+        })
+
+    } catch (error) {
+        return res.status(500).json({
+            status:true,
+            info:"Unknown error"
         })
     }
 }

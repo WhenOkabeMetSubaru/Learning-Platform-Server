@@ -55,7 +55,7 @@ const QuestionSchema = new mongoose.Schema({
     options: [
         {
             _id: false,
-            question_no: Number,
+            option_no: Number,
             title: String
         }
     ],

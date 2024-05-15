@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteAttemptedMockByUser = exports.getAllMocksByPageAndFilter = exports.updateMockBundleNextStatus = exports.updateMockBundleSubmit = exports.getAllDetailsAboutMockResultPage = exports.getAllDetailsAboutMock = exports.getMockAccess = exports.getAllMocks = exports.updateMockByID = exports.getPendingMockByUser = exports.getAllAttemptedMocksByUser = exports.getAllMocksByUser = exports.getMockByID = exports.addNewMockByUser = void 0;
+exports.getLatestBundlesDataByMockUser = exports.deleteAttemptedMockByUser = exports.getAllMocksByPageAndFilter = exports.updateMockBundleNextStatus = exports.updateMockBundleSubmit = exports.getAllDetailsAboutMockResultPage = exports.getAllDetailsAboutMock = exports.getMockAccess = exports.getAllMocks = exports.updateMockByID = exports.getPendingMockByUser = exports.getAllAttemptedMocksByUser = exports.getAllMocksByUser = exports.getMockByID = exports.addNewMockByUser = void 0;
 const mock_model_1 = __importDefault(require("../models/mock/mock.model"));
 const user_model_1 = __importDefault(require("../models/user/user.model"));
 const bundle_model_1 = __importDefault(require("../models/question/bundle.model"));
@@ -426,12 +426,21 @@ exports.getAllDetailsAboutMockResultPage = getAllDetailsAboutMockResultPage;
 const updateMockBundleSubmit = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let updateBundle = yield bundle_model_1.default.findByIdAndUpdate({ _id: req.params.bundleId }, {
-            is_submitted: true
+            is_submitted: true,
+            section_start_time: "",
+            section_end_time: ""
         }, { new: true });
         if (!updateBundle) {
             return res.status(400).json({
                 status: true,
                 info: "Failed to update"
+            });
+        }
+        let bundleDetails = yield bundle_model_1.default.find({ mock: updateBundle.mock });
+        let isPendingBundle = bundleDetails === null || bundleDetails === void 0 ? void 0 : bundleDetails.find((item) => (item === null || item === void 0 ? void 0 : item.is_submitted) == false);
+        if (!isPendingBundle) {
+            let updateMock = yield mock_model_1.default.findByIdAndUpdate({ _id: updateBundle === null || updateBundle === void 0 ? void 0 : updateBundle.mock }, {
+                is_mock_completed_by_user: true
             });
         }
         return res.json({
@@ -570,3 +579,26 @@ const deleteAttemptedMockByUser = (req, res) => __awaiter(void 0, void 0, void 0
     }
 });
 exports.deleteAttemptedMockByUser = deleteAttemptedMockByUser;
+const getLatestBundlesDataByMockUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        let bundleDetails = yield bundle_model_1.default.find({ mock: req.params.mockId });
+        if ((bundleDetails === null || bundleDetails === void 0 ? void 0 : bundleDetails.length) < 1) {
+            return res.status(404).json({
+                status: true,
+                info: "Not Found"
+            });
+        }
+        return res.json({
+            status: false,
+            info: "Data Found",
+            data: bundleDetails
+        });
+    }
+    catch (error) {
+        return res.status(500).json({
+            status: true,
+            info: "Unknown error"
+        });
+    }
+});
+exports.getLatestBundlesDataByMockUser = getLatestBundlesDataByMockUser;

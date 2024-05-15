@@ -12,6 +12,8 @@ router.route('/v1/mock/pagination/all')
     .get(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, mock_controller_1.getAllMocksByPageAndFilter);
 router.route('/v1/mock/user')
     .get(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, mock_controller_1.getAllMocksByUser);
+router.route('/v1/mock/:mockId/latest/bundles')
+    .get(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, mock_controller_1.getLatestBundlesDataByMockUser);
 router.route('/v1/mock/attempted/user')
     .get(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, mock_controller_1.getAllAttemptedMocksByUser);
 router.route('/v1/mock/update/:mockId')

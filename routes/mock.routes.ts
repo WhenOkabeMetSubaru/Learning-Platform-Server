@@ -1,6 +1,6 @@
 
 import { Router } from "express";
-import {addNewMockByUser,getAllMocks,getAllMocksByPageAndFilter,
+import {addNewMockByUser,getAllMocks,getAllMocksByPageAndFilter,getLatestBundlesDataByMockUser,
     getAllDetailsAboutMockResultPage,deleteAttemptedMockByUser, getAllMocksByUser,getMockByID,updateMockBundleSubmit,
     updateMockBundleNextStatus,getAllAttemptedMocksByUser, getPendingMockByUser,updateMockByID,getMockAccess,getAllDetailsAboutMock  } from '../controllers/mock.controller';
 import { signUp, signin, hasAuthorization, requireSignin, isUser, isAdmin, isPaidUser, isValidUserAny, attachUser } from '../auth/auth'
@@ -22,6 +22,9 @@ router.route('/v1/mock/pagination/all')
 router.route('/v1/mock/user')
     .get(requireSignin, attachUser, isValidUserAny,getAllMocksByUser)
 
+
+router.route('/v1/mock/:mockId/latest/bundles')
+    .get(requireSignin,attachUser,isValidUserAny,getLatestBundlesDataByMockUser)
 
 router.route('/v1/mock/attempted/user')
     .get(requireSignin, attachUser, isValidUserAny,getAllAttemptedMocksByUser )

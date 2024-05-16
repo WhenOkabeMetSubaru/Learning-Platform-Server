@@ -396,7 +396,7 @@ export const getAllDetailsAboutMock = async (req: any, res: any) => {
         let mockDetails = await Mock.findById({ _id: req.params.mockId });
 
        
-        let questionUpdate = await Question.updateMany({ access_type: 'answers',created_by:req.user?._id }, { question_status: "not_visited" });
+        // let questionUpdate = await Question.updateMany({ access_type: 'answers',created_by:req.user?._id }, { question_status: "not_visited" });
 
 
         let bundleDetails = await Bundle.find({ mock: mockDetails?._id,created_by:req.user._id });
@@ -441,8 +441,15 @@ export const getAllDetailsAboutMock = async (req: any, res: any) => {
 
         
 
+        let bundleCheckTimerExists = await Bundle.findById({_id:bundleTimer._id});
+
+        if(bundleCheckTimerExists.section_start_time && bundleCheckTimerExists.section_end_time){
+
+        }else{
+            let bundleUpdateNew = await Bundle.findByIdAndUpdate({ _id: bundleTimer._id }, { section_start_time: bundleTimer?.section_start_time, section_end_time: bundleTimer?.section_end_time })
+        }   
         
-        let bundleUpdateNew = await Bundle.findByIdAndUpdate({ _id: bundleTimer._id }, { section_start_time: bundleTimer?.section_start_time, section_end_time: bundleTimer?.section_end_time })
+        
 
 
         bundleDetails = await Bundle.find({ mock: mockDetails?._id, created_by: req.user._id });
@@ -508,10 +515,10 @@ export const getAllDetailsAboutMockResultPage = async (req: any, res: any) => {
         let mockDetails = await Mock.findById({ _id: req.params.mockId });
 
 
-        let questionUpdate = await Question.updateMany({ access_type: 'answers', created_by: req.user?._id }, { question_status: "not_visited" });
+        // let questionUpdate = await Question.updateMany({ access_type: 'answers', created_by: req.user?._id }, { question_status: "not_visited" });
 
 
-        let bundleDetails = await Bundle.find({ mock: mockDetails?._id, created_by: req.user._id }).sort({ 'created': -1 });
+        let bundleDetails = await Bundle.find({ mock: mockDetails?._id, created_by: req.user._id });
         
         let bundleIDArr = bundleDetails?.map((item: any) => {
             return new ObjectId(item?._id);

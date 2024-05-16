@@ -297,15 +297,15 @@ const getMockAccess = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 });
 exports.getMockAccess = getMockAccess;
 const getAllDetailsAboutMock = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _j, _k, _l, _m;
+    var _j, _k, _l;
     try {
         let mockDetails = yield mock_model_1.default.findById({ _id: req.params.mockId });
-        let questionUpdate = yield question_model_1.default.updateMany({ access_type: 'answers', created_by: (_j = req.user) === null || _j === void 0 ? void 0 : _j._id }, { question_status: "not_visited" });
+        // let questionUpdate = await Question.updateMany({ access_type: 'answers',created_by:req.user?._id }, { question_status: "not_visited" });
         let bundleDetails = yield bundle_model_1.default.find({ mock: mockDetails === null || mockDetails === void 0 ? void 0 : mockDetails._id, created_by: req.user._id });
         let getSubmittedSection = bundleDetails === null || bundleDetails === void 0 ? void 0 : bundleDetails.filter((item) => (item === null || item === void 0 ? void 0 : item.is_submitted) == true);
         if ((getSubmittedSection === null || getSubmittedSection === void 0 ? void 0 : getSubmittedSection.length) > 0) {
             for (let i = 0; i < (getSubmittedSection === null || getSubmittedSection === void 0 ? void 0 : getSubmittedSection.length); i++) {
-                let bundleUpdate = yield bundle_model_1.default.findByIdAndUpdate({ _id: (_k = getSubmittedSection[i]) === null || _k === void 0 ? void 0 : _k._id }, { section_start_time: "", section_end_time: "" });
+                let bundleUpdate = yield bundle_model_1.default.findByIdAndUpdate({ _id: (_j = getSubmittedSection[i]) === null || _j === void 0 ? void 0 : _j._id }, { section_start_time: "", section_end_time: "" });
             }
         }
         let firstPendingSection = bundleDetails === null || bundleDetails === void 0 ? void 0 : bundleDetails.find((item) => (item === null || item === void 0 ? void 0 : item.is_submitted) == false);
@@ -328,7 +328,12 @@ const getAllDetailsAboutMock = (req, res) => __awaiter(void 0, void 0, void 0, f
             section_start_time: time1.setMinutes(time1.getMinutes()),
             section_end_time: time2.setMinutes(time2.getMinutes() + (firstPendingSection === null || firstPendingSection === void 0 ? void 0 : firstPendingSection.section_timer) || 10)
         };
-        let bundleUpdateNew = yield bundle_model_1.default.findByIdAndUpdate({ _id: bundleTimer._id }, { section_start_time: bundleTimer === null || bundleTimer === void 0 ? void 0 : bundleTimer.section_start_time, section_end_time: bundleTimer === null || bundleTimer === void 0 ? void 0 : bundleTimer.section_end_time });
+        let bundleCheckTimerExists = yield bundle_model_1.default.findById({ _id: bundleTimer._id });
+        if (bundleCheckTimerExists.section_start_time && bundleCheckTimerExists.section_end_time) {
+        }
+        else {
+            let bundleUpdateNew = yield bundle_model_1.default.findByIdAndUpdate({ _id: bundleTimer._id }, { section_start_time: bundleTimer === null || bundleTimer === void 0 ? void 0 : bundleTimer.section_start_time, section_end_time: bundleTimer === null || bundleTimer === void 0 ? void 0 : bundleTimer.section_end_time });
+        }
         bundleDetails = yield bundle_model_1.default.find({ mock: mockDetails === null || mockDetails === void 0 ? void 0 : mockDetails._id, created_by: req.user._id });
         let bundleIDArr = bundleDetails === null || bundleDetails === void 0 ? void 0 : bundleDetails.map((item) => {
             return new ObjectId(item === null || item === void 0 ? void 0 : item._id);
@@ -352,7 +357,7 @@ const getAllDetailsAboutMock = (req, res) => __awaiter(void 0, void 0, void 0, f
         ]);
         let questionArrayFinal = {};
         for (let i = 0; i < (questionDetails === null || questionDetails === void 0 ? void 0 : questionDetails.length); i++) {
-            questionArrayFinal[(_l = questionDetails[i]) === null || _l === void 0 ? void 0 : _l._id] = (_m = questionDetails[i]) === null || _m === void 0 ? void 0 : _m.questions;
+            questionArrayFinal[(_k = questionDetails[i]) === null || _k === void 0 ? void 0 : _k._id] = (_l = questionDetails[i]) === null || _l === void 0 ? void 0 : _l.questions;
         }
         let finalDataObj = {
             status: false,
@@ -375,11 +380,11 @@ const getAllDetailsAboutMock = (req, res) => __awaiter(void 0, void 0, void 0, f
 });
 exports.getAllDetailsAboutMock = getAllDetailsAboutMock;
 const getAllDetailsAboutMockResultPage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _o, _p, _q;
+    var _m, _o;
     try {
         let mockDetails = yield mock_model_1.default.findById({ _id: req.params.mockId });
-        let questionUpdate = yield question_model_1.default.updateMany({ access_type: 'answers', created_by: (_o = req.user) === null || _o === void 0 ? void 0 : _o._id }, { question_status: "not_visited" });
-        let bundleDetails = yield bundle_model_1.default.find({ mock: mockDetails === null || mockDetails === void 0 ? void 0 : mockDetails._id, created_by: req.user._id }).sort({ 'created': -1 });
+        // let questionUpdate = await Question.updateMany({ access_type: 'answers', created_by: req.user?._id }, { question_status: "not_visited" });
+        let bundleDetails = yield bundle_model_1.default.find({ mock: mockDetails === null || mockDetails === void 0 ? void 0 : mockDetails._id, created_by: req.user._id });
         let bundleIDArr = bundleDetails === null || bundleDetails === void 0 ? void 0 : bundleDetails.map((item) => {
             return new ObjectId(item === null || item === void 0 ? void 0 : item._id);
         });
@@ -402,7 +407,7 @@ const getAllDetailsAboutMockResultPage = (req, res) => __awaiter(void 0, void 0,
         ]);
         let questionArrayFinal = {};
         for (let i = 0; i < (questionDetails === null || questionDetails === void 0 ? void 0 : questionDetails.length); i++) {
-            questionArrayFinal[(_p = questionDetails[i]) === null || _p === void 0 ? void 0 : _p._id] = (_q = questionDetails[i]) === null || _q === void 0 ? void 0 : _q.questions;
+            questionArrayFinal[(_m = questionDetails[i]) === null || _m === void 0 ? void 0 : _m._id] = (_o = questionDetails[i]) === null || _o === void 0 ? void 0 : _o.questions;
         }
         let finalDataObj = {
             status: false,
@@ -460,7 +465,7 @@ const updateMockBundleSubmit = (req, res) => __awaiter(void 0, void 0, void 0, f
 });
 exports.updateMockBundleSubmit = updateMockBundleSubmit;
 const updateMockBundleNextStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _r;
+    var _p;
     try {
         let time1 = new Date();
         let time2 = new Date();
@@ -469,7 +474,7 @@ const updateMockBundleNextStatus = (req, res) => __awaiter(void 0, void 0, void 
         let getSubmittedSection = bundleDetailsFull === null || bundleDetailsFull === void 0 ? void 0 : bundleDetailsFull.filter((item) => item.is_submitted == true);
         if ((getSubmittedSection === null || getSubmittedSection === void 0 ? void 0 : getSubmittedSection.length) > 0) {
             for (let i = 0; i < (getSubmittedSection === null || getSubmittedSection === void 0 ? void 0 : getSubmittedSection.length); i++) {
-                let bundleUpdate = yield bundle_model_1.default.findByIdAndUpdate({ _id: (_r = getSubmittedSection[i]) === null || _r === void 0 ? void 0 : _r._id }, { section_start_time: "", section_end_time: "" });
+                let bundleUpdate = yield bundle_model_1.default.findByIdAndUpdate({ _id: (_p = getSubmittedSection[i]) === null || _p === void 0 ? void 0 : _p._id }, { section_start_time: "", section_end_time: "" });
             }
         }
         let timerObj = {
@@ -499,7 +504,7 @@ const updateMockBundleNextStatus = (req, res) => __awaiter(void 0, void 0, void 
 });
 exports.updateMockBundleNextStatus = updateMockBundleNextStatus;
 const getAllMocksByPageAndFilter = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _s;
+    var _q;
     try {
         let params = req.query;
         let query = {
@@ -516,7 +521,7 @@ const getAllMocksByPageAndFilter = (req, res) => __awaiter(void 0, void 0, void 
             }
         };
         let mockDetails = yield mock_model_1.default.paginate(query, options);
-        if (((_s = mockDetails === null || mockDetails === void 0 ? void 0 : mockDetails.docs) === null || _s === void 0 ? void 0 : _s.length) < 1) {
+        if (((_q = mockDetails === null || mockDetails === void 0 ? void 0 : mockDetails.docs) === null || _q === void 0 ? void 0 : _q.length) < 1) {
             return res.status(404).json({
                 status: true,
                 info: "Not Found"

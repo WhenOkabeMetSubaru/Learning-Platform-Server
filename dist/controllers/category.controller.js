@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateCategoryByID = exports.getAllCategories = exports.getCategoryByID = exports.addNewCategoryToMock = exports.addNewCategoryByUser = void 0;
+exports.getAllSubCategories = exports.getAllParentCategories = exports.updateCategoryByID = exports.getAllCategories = exports.getCategoryByID = exports.addNewCategoryToMock = exports.addNewCategoryByUser = void 0;
 const category_model_1 = __importDefault(require("../models/category/category.model"));
 const addNewCategoryByUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -89,7 +89,7 @@ const getAllCategories = (req, res) => __awaiter(void 0, void 0, void 0, functio
         }
         let finalOutput = {
             status: false,
-            info: "Mock Found",
+            info: "Data Found",
             data: CategoryDetails
         };
         return res.status(200).json(finalOutput);
@@ -134,3 +134,44 @@ const updateCategoryByID = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.updateCategoryByID = updateCategoryByID;
+const getAllParentCategories = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        let categoryDetails = yield category_model_1.default.find({ category_type: { $eq: "parent" } });
+        if ((categoryDetails === null || categoryDetails === void 0 ? void 0 : categoryDetails.length) < 1) {
+            return res.status(404).json({
+                status: true,
+                info: "Category Not Found"
+            });
+        }
+        return res.json({
+            status: false,
+            info: "Data Found",
+            data: categoryDetails
+        });
+    }
+    catch (error) {
+        return res.status(500).json({
+            status: true,
+            info: error.message
+        });
+    }
+});
+exports.getAllParentCategories = getAllParentCategories;
+const getAllSubCategories = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        let categoryDetails = yield category_model_1.default.find({ category_type: "child", parent_category: req.params.parentId });
+        if ((categoryDetails === null || categoryDetails === void 0 ? void 0 : categoryDetails.length) < 1) {
+            return res.status(404).json({
+                status: true,
+                info: "Category Not Found"
+            });
+        }
+    }
+    catch (error) {
+        return res.status(500).json({
+            status: true,
+            info: error.message
+        });
+    }
+});
+exports.getAllSubCategories = getAllSubCategories;

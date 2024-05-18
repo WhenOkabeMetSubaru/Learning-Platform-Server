@@ -105,7 +105,7 @@ export const getAllCategories = async (req: any, res: Response) => {
 
         let finalOutput = {
             status: false,
-            info: "Mock Found",
+            info: "Data Found",
             data: CategoryDetails
         }
 
@@ -161,6 +161,55 @@ export const updateCategoryByID = async (req: any, res: Response) => {
         })
     }
 }
+
+
+export const getAllParentCategories = async (req: any, res: any) => {
+    try {
+
+        let categoryDetails = await Category.find({category_type:{$eq:"parent"}});
+       
+
+        if(categoryDetails?.length<1){
+            return res.status(404).json({
+                status:true,
+                info:"Category Not Found"
+            })
+        }
+
+        return res.json({
+            status:false,
+            info:"Data Found",
+            data:categoryDetails
+        })
+
+    } catch (error:any) {
+        return res.status(500).json({
+            status:true,
+            info:error.message
+        })
+    }
+}
+
+export const getAllSubCategories = async (req: any, res: any) => {
+    try {
+
+        let categoryDetails = await Category.find({ category_type: "child",parent_category:req.params.parentId });
+
+        if (categoryDetails?.length < 1) {
+            return res.status(404).json({
+                status: true,
+                info: "Category Not Found"
+            })
+        }
+
+    } catch (error: any) {
+        return res.status(500).json({
+            status: true,
+            info: error.message
+        })
+    }
+}
+
 
 
 

@@ -5,7 +5,8 @@ const CategorySchema = new mongoose.Schema({
 
     name:{
         type:String,
-        required:true
+        required:true,
+        unique:true
     },
     description:{
         type:String,
@@ -15,13 +16,9 @@ const CategorySchema = new mongoose.Schema({
         type:mongoose.Schema.ObjectId,
         ref:"Category"
     },
-    child_category:{
-        type:mongoose.Schema.ObjectId,
-        ref:"Category"
-    },
     category_type:{
         type:String,
-        enum:['main','sub','child']
+        enum:['parent','child']
 
     },
     

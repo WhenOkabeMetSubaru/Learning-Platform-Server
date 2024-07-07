@@ -17,13 +17,14 @@ const mock_model_1 = __importDefault(require("../models/mock/mock.model"));
 const user_model_1 = __importDefault(require("../models/user/user.model"));
 const bundle_model_1 = __importDefault(require("../models/question/bundle.model"));
 const question_model_1 = __importDefault(require("../models/question/question.model"));
+const answered_model_1 = __importDefault(require("../models/question/answered.model"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const ObjectId = mongoose_1.default.Types.ObjectId;
 const addNewMockByUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let mockDetails = req.body;
         mockDetails.created_by = req.user._id;
-        let checkExists = yield mock_model_1.default.findOne({ completion_status: "pending", created_by: req.user._id });
+        let checkExists = yield mock_model_1.default.findOne({ completion_status: "pending", created_by: req.user._id, mock_type: "paper" });
         if (checkExists) {
             return {
                 status: true,
@@ -123,7 +124,7 @@ const getAllAttemptedMocksByUser = (req, res) => __awaiter(void 0, void 0, void 
 exports.getAllAttemptedMocksByUser = getAllAttemptedMocksByUser;
 const getPendingMockByUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        let mockDetails = yield mock_model_1.default.findOne({ created_by: req.user._id, completion_status: 'pending' });
+        let mockDetails = yield mock_model_1.default.findOne({ created_by: req.user._id, completion_status: 'pending', mock_type: "paper" });
         if (!mockDetails) {
             return res.status(404).json({
                 status: true,
@@ -430,6 +431,7 @@ const getAllDetailsAboutMockResultPage = (req, res) => __awaiter(void 0, void 0,
 });
 exports.getAllDetailsAboutMockResultPage = getAllDetailsAboutMockResultPage;
 const updateMockBundleSubmit = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _p, _q, _r, _s, _t, _u;
     try {
         let updateBundle = yield bundle_model_1.default.findByIdAndUpdate({ _id: req.params.bundleId }, {
             is_submitted: true,
@@ -448,6 +450,56 @@ const updateMockBundleSubmit = (req, res) => __awaiter(void 0, void 0, void 0, f
             let updateMock = yield mock_model_1.default.findByIdAndUpdate({ _id: updateBundle === null || updateBundle === void 0 ? void 0 : updateBundle.mock }, {
                 is_mock_completed_by_user: true
             });
+            let bundleDetails = yield bundle_model_1.default.find({ mock: updateBundle.mock });
+            let bundleIDArr = bundleDetails === null || bundleDetails === void 0 ? void 0 : bundleDetails.map((item) => {
+                return new ObjectId(item === null || item === void 0 ? void 0 : item._id);
+            });
+            let questionDetails = yield question_model_1.default.aggregate([
+                {
+                    $match: {
+                        bundle: {
+                            $in: bundleIDArr
+                        },
+                        access_type: "answers",
+                        created_by: new ObjectId(req.user._id)
+                    }
+                },
+                {
+                    $group: {
+                        "_id": "$bundle",
+                        "questions": { $push: "$$ROOT" }
+                    }
+                }
+            ]);
+            for (let i = 0; i < (questionDetails === null || questionDetails === void 0 ? void 0 : questionDetails.length); i++) {
+                let resultDetailsObj = {
+                    total_questions: (_q = (_p = questionDetails[i]) === null || _p === void 0 ? void 0 : _p.questions) === null || _q === void 0 ? void 0 : _q.length,
+                    total_correct_answers: 0,
+                    total_incorrect_answers: 0,
+                    total_attempts: 0,
+                    unattempted_questions: 0,
+                    total_marks: 0,
+                    bundle: (_r = questionDetails[i]) === null || _r === void 0 ? void 0 : _r._id,
+                    negative_marks: 0,
+                };
+                for (let j = 0; j < ((_t = (_s = questionDetails[i]) === null || _s === void 0 ? void 0 : _s.questions) === null || _t === void 0 ? void 0 : _t.length); j++) {
+                    let questionInfo = (_u = questionDetails[j]) === null || _u === void 0 ? void 0 : _u.questions[j];
+                    delete questionInfo.primary_data;
+                    delete questionInfo.options;
+                    let isCorrect = ((questionInfo === null || questionInfo === void 0 ? void 0 : questionInfo.user_answer) == (questionInfo === null || questionInfo === void 0 ? void 0 : questionInfo.correct_answer));
+                    let isNotAttempted = questionInfo.question_status == "not_visited" || questionInfo.question_status == 'not_answered' || questionInfo.question_status == 'reviewed_not_answered';
+                    if (isNotAttempted == false) {
+                        resultDetailsObj.total_correct_answers += isCorrect ? 1 : 0;
+                        resultDetailsObj.total_incorrect_answers += isCorrect ? 0 : 1;
+                        resultDetailsObj.total_marks += isCorrect ? questionInfo.awarded_points : -questionInfo.negative_points;
+                        resultDetailsObj.negative_marks += isCorrect ? 0 : questionInfo.negative_points;
+                        resultDetailsObj.total_attempts += isNotAttempted ? 0 : 1;
+                    }
+                    resultDetailsObj.unattempted_questions += isNotAttempted ? 1 : 0;
+                }
+                let updateAnswered = new answered_model_1.default(resultDetailsObj);
+                let finalUpdate = yield updateAnswered.save();
+            }
         }
         return res.json({
             status: false,
@@ -465,7 +517,7 @@ const updateMockBundleSubmit = (req, res) => __awaiter(void 0, void 0, void 0, f
 });
 exports.updateMockBundleSubmit = updateMockBundleSubmit;
 const updateMockBundleNextStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _p;
+    var _v;
     try {
         let time1 = new Date();
         let time2 = new Date();
@@ -474,7 +526,7 @@ const updateMockBundleNextStatus = (req, res) => __awaiter(void 0, void 0, void 
         let getSubmittedSection = bundleDetailsFull === null || bundleDetailsFull === void 0 ? void 0 : bundleDetailsFull.filter((item) => item.is_submitted == true);
         if ((getSubmittedSection === null || getSubmittedSection === void 0 ? void 0 : getSubmittedSection.length) > 0) {
             for (let i = 0; i < (getSubmittedSection === null || getSubmittedSection === void 0 ? void 0 : getSubmittedSection.length); i++) {
-                let bundleUpdate = yield bundle_model_1.default.findByIdAndUpdate({ _id: (_p = getSubmittedSection[i]) === null || _p === void 0 ? void 0 : _p._id }, { section_start_time: "", section_end_time: "" });
+                let bundleUpdate = yield bundle_model_1.default.findByIdAndUpdate({ _id: (_v = getSubmittedSection[i]) === null || _v === void 0 ? void 0 : _v._id }, { section_start_time: "", section_end_time: "" });
             }
         }
         let timerObj = {
@@ -504,7 +556,7 @@ const updateMockBundleNextStatus = (req, res) => __awaiter(void 0, void 0, void 
 });
 exports.updateMockBundleNextStatus = updateMockBundleNextStatus;
 const getAllMocksByPageAndFilter = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _q;
+    var _w;
     try {
         let params = req.query;
         let query = {
@@ -521,7 +573,7 @@ const getAllMocksByPageAndFilter = (req, res) => __awaiter(void 0, void 0, void 
             }
         };
         let mockDetails = yield mock_model_1.default.paginate(query, options);
-        if (((_q = mockDetails === null || mockDetails === void 0 ? void 0 : mockDetails.docs) === null || _q === void 0 ? void 0 : _q.length) < 1) {
+        if (((_w = mockDetails === null || mockDetails === void 0 ? void 0 : mockDetails.docs) === null || _w === void 0 ? void 0 : _w.length) < 1) {
             return res.status(404).json({
                 status: true,
                 info: "Not Found"

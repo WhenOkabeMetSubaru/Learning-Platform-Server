@@ -3,21 +3,29 @@ const mongoose = require('mongoose');
 
 const AnsweredSchema = new mongoose.Schema({
 
-    question:{
-        type:mongoose.Schema.ObjectId,
-        ref:"Question"
+    total_questions:{
+        type:Number
     },
-    user_answer:{
-        type:String
+    total_correct_answers:{
+        type:Number
     },
-    question_status:{
-        type:String,
-        enum:["wrong","correct","unattempted"],
-        default:"unattempted"
+    total_incorrect_answer:{
+        type:Number
     },
-    category:{
-        type:mongoose.Schema.ObjectId,
-        ref:"Category"
+    total_attempts:{
+        type:Number
+    },
+    unattempted_questions:{
+        type:Number
+    },
+    total_marks:{
+        type:Number
+    },
+    negative_marks:{
+        type:Number
+    },
+    percentile:{
+        type:Number
     },
     bundle:{
         type:mongoose.Schema.ObjectId,

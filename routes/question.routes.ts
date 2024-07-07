@@ -1,6 +1,8 @@
 
 import { Router } from "express";
-import { addNewQuestionByUser, getAllQuestions,getAllQuestionsByPageAndFilter,getQuestionDetails,getAllAttemptedQuestionsByUser,getAllQuestionsHomePage, getAllQuestionsByBundle, getAllQuestionsByMock,updateQuestionStatusForMock, getAllQuestionsByUser, getQuestionByID, updateQuestionByID } from '../controllers/question.controller';
+import { addNewQuestionByUser, getAllQuestions,getAllQuestionsByPageAndFilter,
+    getQuestionDetails,getAllAttemptedQuestionsByUser,getAllQuestionsHomePage, getAllQuestionsByBundle, getAllQuestionsByMock,updateQuestionStatusForMock,
+     getAllQuestionsByUser, getQuestionByID, updateQuestionByID, getQuestionAccess } from '../controllers/question.controller';
 import { signUp, signin, hasAuthorization, requireSignin, isUser, isAdmin, isPaidUser, isValidUserAny, attachUser } from '../auth/auth'
 
 const router = Router();
@@ -24,6 +26,9 @@ router.route('/v1/question/update/:questionId')
 
 router.route('/v1/question/bundle/:bundleId')
     .get(requireSignin,attachUser,isValidUserAny,getAllQuestionsByBundle)
+
+router.route('/v1/question/access/user/:questionId')
+    .get(requireSignin,attachUser,isValidUserAny,getQuestionAccess)
 
 router.route('/v1/question/mock/:mockId')
     .get(requireSignin,attachUser,isValidUserAny,getAllQuestionsByMock)

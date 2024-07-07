@@ -16,6 +16,8 @@ router.route('/v1/question/update/:questionId')
     .post(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, question_controller_1.updateQuestionByID);
 router.route('/v1/question/bundle/:bundleId')
     .get(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, question_controller_1.getAllQuestionsByBundle);
+router.route('/v1/question/access/user/:questionId')
+    .get(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, question_controller_1.getQuestionAccess);
 router.route('/v1/question/mock/:mockId')
     .get(auth_1.requireSignin, auth_1.attachUser, auth_1.isValidUserAny, question_controller_1.getAllQuestionsByMock);
 router.route('/v1/question/:questionId')

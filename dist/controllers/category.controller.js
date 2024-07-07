@@ -166,6 +166,11 @@ const getAllSubCategories = (req, res) => __awaiter(void 0, void 0, void 0, func
                 info: "Category Not Found"
             });
         }
+        return res.json({
+            status: false,
+            info: "Data Found",
+            data: categoryDetails
+        });
     }
     catch (error) {
         return res.status(500).json({

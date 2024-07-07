@@ -10,6 +10,10 @@ const QuestionSchema = new mongoose.Schema({
         type:mongoose.Schema.ObjectId,
         ref:"Mock"
     },
+    testId:{   //replica of main question
+        type:mongoose.Schema.ObjectId,
+        ref:"Question"
+    },
 
     bundle:{
         type:mongoose.Schema.ObjectId,
@@ -29,7 +33,7 @@ const QuestionSchema = new mongoose.Schema({
     },
     access_type:{
         type:String,
-        enum:['mock_only','answers','single','read_only','multiple','multi_child']
+        enum:['mock_only','answers','single','read_only','multiple','multi_child','answers_non_mock','multiple_non_mock']
     },
     primary_data:{
         type:String,

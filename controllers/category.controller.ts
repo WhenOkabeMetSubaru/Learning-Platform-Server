@@ -202,6 +202,12 @@ export const getAllSubCategories = async (req: any, res: any) => {
             })
         }
 
+        return res.json({
+            status:false,
+            info:"Data Found",
+            data:categoryDetails
+        })
+
     } catch (error: any) {
         return res.status(500).json({
             status: true,

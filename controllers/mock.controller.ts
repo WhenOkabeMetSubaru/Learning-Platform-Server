@@ -19,7 +19,7 @@ export const addNewMockByUser = async (req: any, res: Response) => {
        let mockDetails = req.body;
        mockDetails.created_by = req.user._id;
       
-       let checkExists = await Mock.findOne({ completion_status: "pending",created_by:req.user._id });
+       let checkExists = await Mock.findOne({ completion_status: "pending",created_by:req.user._id,mock_type:"paper" });
        
 
        if (checkExists) {
@@ -157,7 +157,7 @@ export const getPendingMockByUser = async (req: any, res: Response, next: NextFu
     try {
 
 
-        let mockDetails = await Mock.findOne({ created_by: req.user._id, completion_status: 'pending' });
+        let mockDetails = await Mock.findOne({ created_by: req.user._id, completion_status: 'pending',mock_type:"paper" });
 
         if (!mockDetails) {
             return res.status(404).json({
@@ -598,6 +598,82 @@ export const updateMockBundleSubmit = async (req: any, res: any) => {
             let updateMock = await Mock.findByIdAndUpdate({_id:updateBundle?.mock},{
                 is_mock_completed_by_user:true
             });
+
+            let bundleDetails = await Bundle.find({mock:updateBundle.mock});
+
+            let bundleIDArr = bundleDetails?.map((item: any) => {
+                return new ObjectId(item?._id);
+            })
+
+            let questionDetails = await Question.aggregate([
+                {
+                    $match: {
+                        bundle: {
+                            $in: bundleIDArr
+                        },
+                        access_type: "answers",
+                        created_by: new ObjectId(req.user._id)
+                    }
+                },
+                {
+                    $group: {
+                        "_id": "$bundle",
+                        "questions": { $push: "$$ROOT" }
+                    }
+                }
+            ])
+
+          
+
+            for (let i = 0; i < questionDetails?.length; i++) {
+
+                let resultDetailsObj = {
+                    total_questions: questionDetails[i]?.questions?.length,
+                    total_correct_answers: 0,
+                    total_incorrect_answers: 0,
+                    total_attempts: 0,
+                    unattempted_questions: 0,
+                    total_marks: 0,
+                    bundle:questionDetails[i]?._id,
+                    negative_marks: 0,
+                }
+
+                for (let j = 0; j < questionDetails[i]?.questions?.length; j++) {
+
+                    let questionInfo = questionDetails[j]?.questions[j];
+                    delete questionInfo.primary_data;
+                    delete questionInfo.options
+
+                    let isCorrect = (questionInfo?.user_answer == questionInfo?.correct_answer);
+
+                    let isNotAttempted = questionInfo.question_status == "not_visited" || questionInfo.question_status == 'not_answered' || questionInfo.question_status == 'reviewed_not_answered';
+
+
+
+
+
+                    if (isNotAttempted == false) {
+                        resultDetailsObj.total_correct_answers += isCorrect ? 1 : 0;
+                        resultDetailsObj.total_incorrect_answers += isCorrect ? 0 : 1;
+                        resultDetailsObj.total_marks += isCorrect ? questionInfo.awarded_points : -questionInfo.negative_points;
+                        resultDetailsObj.negative_marks += isCorrect ? 0 : questionInfo.negative_points;
+                        resultDetailsObj.total_attempts += isNotAttempted ? 0 : 1
+                    }
+
+
+                    resultDetailsObj.unattempted_questions += isNotAttempted ? 1 : 0;
+
+                }
+
+
+                let updateAnswered = new Answered(resultDetailsObj);
+                let finalUpdate = await updateAnswered.save();
+
+
+
+            }
+
+
             
         }
 
@@ -672,6 +748,7 @@ export const getAllMocksByPageAndFilter = async (req: any, res: any) => {
     try {
 
         
+        
 
         let params = req.query;
 
@@ -691,6 +768,8 @@ export const getAllMocksByPageAndFilter = async (req: any, res: any) => {
                 createdAt: params?.sort || -1
             }
         }
+
+
 
 
         let mockDetails = await Mock.paginate(query, options);
